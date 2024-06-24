@@ -6,10 +6,41 @@ import { emailvalidate, passwordvalidate } from "./regexvalidate";
 
 const LoginForm = () => {
   const [input, setInput] = useState({ email: "", password: "" });
-  const [errormessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
+  };
+
+  const loginRequest = async () => {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+      username: input.email,
+      password: input.password,
+    });
+
+    const requestOptions = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow",
+    };
+
+    try {
+      const response = await fetch("https://thestoryloft.in/api/login", requestOptions);
+      const result = await response.json();
+      if (result.success) {
+        setErrorMessage("");
+        alert("Login Successful!");
+      } else {
+        setErrorMessage("Invalid username or password");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setErrorMessage("An error occurred during login");
+    }
   };
 
   const Logincheck = (e) => {
@@ -22,45 +53,16 @@ const LoginForm = () => {
       setErrorMessage("Password should have a minimum of 6 characters");
       return;
     }
-
-    var myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-
-    var raw = JSON.stringify({
-      username: input.email,
-      password: input.password,
-    });
-
-    var requestOptions = {
-      method: "POST",
-      headers: myHeaders,
-      body: raw,
-      redirect: "follow",
-    };
-
-    fetch("https://thestoryloft.in/api/login", requestOptions)
-      .then((response) => response.json())
-      .then((result) => {
-        if (result.success) {
-          setErrorMessage("");
-          alert("Login Successful!");
-        } else {
-          setErrorMessage("Invalid username or password");
-        }
-      })
-      .catch((error) => {
-        console.log("error", error);
-        setErrorMessage("An error occurred during login");
-      });
+    loginRequest();
   };
 
   return (
     <div className="container">
-      <form>
+      <form onSubmit={Logincheck}>
         <h1>LOG IN</h1>
-        {errormessage && (
+        {errorMessage && (
           <div style={{ fontSize: "15px", marginLeft: "10px", color: "red" }}>
-            {errormessage}
+            {errorMessage}
           </div>
         )}
         <div className="input-box">
@@ -91,9 +93,7 @@ const LoginForm = () => {
             Remember me
           </label>
         </div>
-        <button type="submit" onClick={Logincheck}>
-          Login
-        </button>
+        <button type="submit">Login</button>
         <div className="link">
           <p>
             website <a href="https://storyloft.onrender.com/">storyloft</a>
